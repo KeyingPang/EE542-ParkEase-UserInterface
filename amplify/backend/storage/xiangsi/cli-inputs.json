@@ -1,0 +1,13 @@
+{
+  "resourceName": "xiangsi",
+  "policyUUID": "a82bb0c5",
+  "bucketName": "xiangsi",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
