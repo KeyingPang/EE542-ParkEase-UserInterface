@@ -65,11 +65,6 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
-    "contactappfc53deb4": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
     "testspotsearch": {
       "build": true,
       "providerPlugin": "awscloudformation",
