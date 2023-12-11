@@ -20,6 +20,10 @@
       },
       "api": {
         "contactapp": {}
+      },
+      "function": {
+        "contactappd795cc09": {},
+        "contactappf8c50732": {}
       }
     }
   }

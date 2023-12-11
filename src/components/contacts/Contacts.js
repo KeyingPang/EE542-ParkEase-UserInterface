@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { API, graphqlOperation, Storage } from 'aws-amplify';
 
+import { v4 as uuid } from 'uuid';
 import { listContacts } from '../../graphql/queries';
 import { createContact } from '../../graphql/mutations';
 import Container from 'react-bootstrap/Container';
@@ -11,12 +12,24 @@ import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Modal  from 'react-bootstrap/Modal';
+import axios from 'axios'; // If using Axios
+// No import needed for Fetch as it's a browser API
+
 import { InputGroup, FormControl} from 'react-bootstrap';
 import { Search } from 'react-bootstrap-icons';
 
 
 
-import { v4 as uuid } from 'uuid';
+
+// AWS.config.update({
+//   accessKeyId: 'YOUR_ACCESS_KEY_ID',
+//   secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
+//   region: 'YOUR_REGION'
+// });
+
+
+
+// const AWS = require('aws-sdk');
 
 function Contacts(props) {
 
@@ -33,6 +46,47 @@ function Contacts(props) {
     const [showModal, setShowModal] = useState(false);
     const [modalData, setModalData] = useState({ plateNumber: '', zoneNum: '' });
     const [showNotFoundModal, setShowNotFoundModal] = useState(false);
+
+    const [showSpotModal, setShowSpotModal] = useState(false);
+    const [modalSpotData, setModalSpotData] = useState({  emptySpot: '' });
+    const [showSpotNotFoundModal, setShowSpotNotFoundModal] = useState(false);
+    
+    // const [result, setResult] = useState(null);
+    // const [isLoading, setIsLoading] = useState(false);
+
+    // const findEmptySpot = async () => {
+    //     setIsLoading(true);
+    //     try {
+    //       // Replace with your actual API endpoint
+          
+    //       const response = await axios.get('https://your-api-endpoint.com/path');
+    //       setResult(response.data); // Process the response as needed
+    //     } catch (error) {
+    //       console.error('Error fetching data:', error);
+    //       // Handle error appropriately
+    //     } finally {
+    //       setIsLoading(false);
+    //     }
+    //   };
+
+    // Function to find an empty spot and trigger a popup with its ID
+    const fetchSpotData = async () => {
+        try {
+            // const response = await Storage.get('latest_combined_file.json', { download: true });
+            const response = await Storage.get('spotTest.json', { download: true });
+            const blob = response.Body;
+            const text = await new Response(blob).text();
+            const jsonData = JSON.parse(text);
+
+            // Log the JSON data to the console
+            console.log("Fetched JSON data:", jsonData);
+            return JSON.parse(text);
+        } catch (error) {
+            console.error('Error fetching zone data from S3', error);
+            return null;
+        }
+    }
+
 
 
     const fetchZoneData = async () => {
@@ -51,21 +105,30 @@ function Contacts(props) {
         }
     };
     
-    // const handleSearch = async (e) => {
-    //     e.preventDefault();
-    //     const filter = {
-    //         carPlateNumber: {
-    //             eq: plateNumber // Assuming exact match
-    //         }
-    //     };
-    
-    //     try {
-    //         const result = await API.graphql(graphqlOperation(listContacts, { filter }));
-    //         setSearchResults(result.data.listContacts.items);
-    //     } catch (error) {
-    //         console.error("Error searching contacts", error);
-    //     }
-    // };
+    const handleSpotSearch = async (e) => {
+        e.preventDefault();
+        try {
+            const spotData = await fetchSpotData();
+            console.log('fetch success')
+            const matchingEntry = spotData.find(entry => entry.data === "empty");
+            console.log(spotData)
+            if (matchingEntry) {
+                // Display the ZoneNum on the frontend
+                console.log(`empty spot::`, matchingEntry.id);
+                // Update the state or handle the display as needed
+                setModalSpotData({ emptySpot: matchingEntry.id });
+                setShowSpotModal(true);
+            } else {
+                // Handle the case where the plate number is not found
+                console.log('No empty spot');
+                setShowSpotNotFoundModal(true);
+            }
+        } catch (error) {
+            console.error('Error in search', error);
+        }
+    };
+
+
     const handleSearch = async (e) => {
         e.preventDefault();
         try {
@@ -90,9 +153,15 @@ function Contacts(props) {
             console.error('Error in search', error);
         }
     };
+
+
     const handleCloseNotFoundModal = () => setShowNotFoundModal(false);
     //Added
     const handleCloseModal = () => setShowModal(false);
+
+    const handleSpotCloseNotFoundModal = () => setShowSpotNotFoundModal(false);
+    //Added
+    const handleSpotCloseModal = () => setShowSpotModal(false);
 
     const getContacts = async() => {
         try {
@@ -116,9 +185,6 @@ function Contacts(props) {
         }
     }
 
-    // useEffect(() => {
-    //     getContacts()
-    // }, []);
 
     const addNewContact = async () => {
         try {
@@ -151,10 +217,11 @@ function Contacts(props) {
         }
     }, []);
 
+
+
     return (
         < Container >
-
-
+            <Button onClick={handleSpotSearch}>Search empty Spot</Button>
              
             <Row className="px-4 my-5">
                 <Col><h1>Contacts</h1></Col>
@@ -215,9 +282,10 @@ function Contacts(props) {
                     </Form>
                 </Col>
             </Row>
+            
 
             
-             <Form onSubmit={handleSearch}>
+            <Form onSubmit={handleSearch}>
                 <Form.Group controlId="formPlateNumber">
                     <Form.Label>Plate Number</Form.Label>
                     <Form.Control 
@@ -231,10 +299,6 @@ function Contacts(props) {
                     Search
                 </Button>
             </Form> 
-
-
-
-
              {searchResults.length > 0 && (
                 <div>
                     <h3>Search Results:</h3>
@@ -291,6 +355,38 @@ function Contacts(props) {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleCloseNotFoundModal}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+
+
+            <Modal show={showSpotModal} onHide={handleSpotCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title> Empty Spot Information</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p><strong>Empty Spot:</strong> {modalSpotData.emptySpot}</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={handleSpotCloseModal}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+
+          {/* Not Found Modal */}
+            <Modal show={showSpotNotFoundModal} onHide={handleSpotCloseNotFoundModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Search Result</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    No empty spot.
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleSpotCloseNotFoundModal}>
                         Close
                     </Button>
                 </Modal.Footer>
