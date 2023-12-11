@@ -60,11 +60,6 @@
     }
   },
   "function": {
-    "contactappd795cc09": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
     "contactappf8c50732": {
       "build": true,
       "providerPlugin": "awscloudformation",
