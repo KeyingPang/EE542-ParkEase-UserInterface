@@ -64,11 +64,24 @@
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_contactappf8c50732_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contactappf8c50732"
+        }
+      ]
     },
-    "testspotsearch": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
+    "AMPLIFY_function_contactappf8c50732_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contactappf8c50732"
+        }
+      ]
     }
   },
   "storage": {

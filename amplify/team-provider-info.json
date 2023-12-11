@@ -19,10 +19,14 @@
         "xiangsi": {}
       },
       "api": {
-        "contactapp": {}
+        "contactapp": {},
+        "api38fb3d7c": {}
       },
       "function": {
-        "contactappf8c50732": {}
+        "contactappf8c50732": {
+          "deploymentBucketName": "amplify-contactapp-dev-215924-deployment",
+          "s3Key": "amplify-builds/contactappf8c50732-3473664a663778615247-build.zip"
+        }
       }
     }
   }
